@@ -150,7 +150,6 @@ def send_help(chat_id, text, keyboard=None):
     )
 
 
-
 @run_async
 def start(bot: Bot, update: Update, args: List[str]):
     print("Start")
