@@ -1,10 +1,6 @@
-import html
 import importlib
 import json
 import re
-import time
-import traceback
-from sys import argv
 from typing import Optional
 
 from telegram import (
@@ -24,43 +20,28 @@ from telegram.error import (
     TimedOut,
     Unauthorized,
 )
-from telegram.ext import (
-    CallbackContext,
-    CallbackQueryHandler,
-    CommandHandler,
-    Filters,
-    MessageHandler,
-)
+from telegram.ext import CallbackQueryHandler, CommandHandler, Filters, MessageHandler
 from telegram.ext.dispatcher import DispatcherHandlerStop, run_async
 from telegram.utils.helpers import escape_markdown
 
 from DaisyX import (
     ALLOW_EXCL,
-    BL_CHATS,
     CERT_PATH,
-    DONATION_LINK,
     LOGGER,
     OWNER_ID,
     PORT,
-    SUPPORT_CHAT,
     TOKEN,
     URL,
     WEBHOOK,
-    WHITELIST_CHATS,
-    StartTime,
     dispatcher,
-    pbot,
-    telethn,
     updater,
 )
 
 # needed to dynamically load modules
 # NOTE: Module order is not guaranteed, specify that in the config file!
 from DaisyX.modules import ALL_MODULES
-from DaisyX.modules.helper_funcs.alternate import typing_action
 from DaisyX.modules.helper_funcs.chat_status import is_user_admin
 from DaisyX.modules.helper_funcs.misc import paginate_modules
-from DaisyX.modules.helper_funcs.readable_time import get_readable_time
 
 PM_START_TEXT = """
 _Hello_ *{}*
@@ -83,11 +64,14 @@ the things I can help you with.
    🔺 - in a group: will redirect you to pm, with all that chat's settings.
 {}
 And the following:
-""".format(dispatcher.bot.first_name, "" if not ALLOW_EXCL else "\nAll commands can either be used with / or !.\n")
-
+""".format(
+    dispatcher.bot.first_name,
+    "" if not ALLOW_EXCL else "\nAll commands can either be used with / or !.\n",
+)
 
 
 VERSION = "6.0"
+
 
 def vercheck() -> str:
     return str(VERSION)
@@ -112,12 +96,12 @@ USER_SETTINGS = {}
 
 GDPR = []
 
-START_IMG = os.environ.get('START_IMG', None)
+START_IMG = os.environ.get("START_IMG", None)
 if START_IMG is None:
     img = "https://telegra.ph/Rashmika-mandhana-10-04-3"
 else:
-  img = START_IMG    
-    
+    img = START_IMG
+
 for module_name in ALL_MODULES:
     imported_module = importlib.import_module("DaisyX.modules." + module_name)
     if not hasattr(imported_module, "__mod_name__"):
@@ -161,10 +145,9 @@ for module_name in ALL_MODULES:
 def send_help(chat_id, text, keyboard=None):
     if not keyboard:
         keyboard = InlineKeyboardMarkup(paginate_modules(0, HELPABLE, "help"))
-    dispatcher.bot.send_message(chat_id=chat_id,
-                                text=text,
-                                parse_mode=ParseMode.MARKDOWN,
-                                reply_markup=keyboard)
+    dispatcher.bot.send_message(
+        chat_id=chat_id, text=text, parse_mode=ParseMode.MARKDOWN, reply_markup=keyboard
+    )
 
 
 @run_async
@@ -179,7 +162,7 @@ def test(bot: Bot, update: Update):
 def start(bot: Bot, update: Update, args: List[str]):
     print("Start")
     chat = update.effective_chat  # type: Optional[Chat]
-    query = update.callback_query
+    update.callback_query
     if update.effective_chat.type == "private":
         if len(args) >= 1:
             if args[0].lower() == "help":
@@ -200,11 +183,22 @@ def start(bot: Bot, update: Update, args: List[str]):
         else:
             send_start(bot, update)
     else:
-        update.effective_message.reply_text("Heya,{} Here..\nHow can I help you? 🙂".format(bot.first_name),reply_markup=InlineKeyboardMarkup(
-                                                [[InlineKeyboardButton(text="⚜️Help",url="t.me/{}?start=help".format(bot.username))]]))
+        update.effective_message.reply_text(
+            "Heya,{} Here..\nHow can I help you? 🙂".format(bot.first_name),
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="⚜️Help", url="t.me/{}?start=help".format(bot.username)
+                        )
+                    ]
+                ]
+            ),
+        )
+
 
 def send_start(bot, update):
-    #Try to remove old message
+    # Try to remove old message
     try:
         query = update.callback_query
         query.message.delete()
@@ -212,14 +206,35 @@ def send_start(bot, update):
         pass
 
     chat = update.effective_chat  # type: Optional[Chat]
-    first_name = update.effective_user.first_name 
-    text = PM_START_TEXT
+    first_name = update.effective_user.first_name
 
-    keyboard = [[InlineKeyboardButton(text="🤝Help",callback_data="help_back"),InlineKeyboardButton(text="🛡Creator🛡",url="https://t.me/Amani_m_h_d")]]
-    keyboard += [[InlineKeyboardButton(text="🌐Connect Group", callback_data="main_connect"),InlineKeyboardButton(text="⚜️Add Me⚜️",url="t.me/{}?startgroup=true".format(bot.username))]]
+    keyboard = [
+        [
+            InlineKeyboardButton(text="🤝Help", callback_data="help_back"),
+            InlineKeyboardButton(text="🛡Creator🛡", url="https://t.me/Amani_m_h_d"),
+        ]
+    ]
+    keyboard += [
+        [
+            InlineKeyboardButton(text="🌐Connect Group", callback_data="main_connect"),
+            InlineKeyboardButton(
+                text="⚜️Add Me⚜️", url="t.me/{}?startgroup=true".format(bot.username)
+            ),
+        ]
+    ]
 
-    update.effective_message.reply_photo(img, PM_START_TEXT.format(escape_markdown(first_name), escape_markdown(bot.first_name), OWNER_NAME, OWNER_ID), 
-                                         reply_markup=InlineKeyboardMarkup(keyboard), disable_web_page_preview=True, parse_mode=ParseMode.MARKDOWN)
+    update.effective_message.reply_photo(
+        img,
+        PM_START_TEXT.format(
+            escape_markdown(first_name),
+            escape_markdown(bot.first_name),
+            OWNER_NAME,
+            OWNER_ID,
+        ),
+        reply_markup=InlineKeyboardMarkup(keyboard),
+        disable_web_page_preview=True,
+        parse_mode=ParseMode.MARKDOWN,
+    )
 
 
 def m_connect_button(bot, update):
@@ -266,31 +281,54 @@ def help_button(bot: Bot, update: Update):
     try:
         if mod_match:
             module = mod_match.group(1)
-            text = "Here is the help for the *{}* module:\n".format(HELPABLE[module].__mod_name__) \
-                   + HELPABLE[module].__help__
-            query.message.reply_text(text=text,
-                                     parse_mode=ParseMode.MARKDOWN,
-                                     reply_markup=InlineKeyboardMarkup(
-                                         [[InlineKeyboardButton(text="🚶🏻‍♂️Back🚶🏻‍♂️", callback_data="help_back")]]))
+            text = (
+                "Here is the help for the *{}* module:\n".format(
+                    HELPABLE[module].__mod_name__
+                )
+                + HELPABLE[module].__help__
+            )
+            query.message.reply_text(
+                text=text,
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup(
+                    [
+                        [
+                            InlineKeyboardButton(
+                                text="🚶🏻‍♂️Back🚶🏻‍♂️", callback_data="help_back"
+                            )
+                        ]
+                    ]
+                ),
+            )
 
         elif prev_match:
             curr_page = int(prev_match.group(1))
-            query.message.reply_text(HELP_STRINGS,
-                                     parse_mode=ParseMode.MARKDOWN,
-                                     reply_markup=InlineKeyboardMarkup(
-                                         paginate_modules(curr_page - 1, HELPABLE, "help")))
+            query.message.reply_text(
+                HELP_STRINGS,
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup(
+                    paginate_modules(curr_page - 1, HELPABLE, "help")
+                ),
+            )
 
         elif next_match:
             next_page = int(next_match.group(1))
-            query.message.reply_text(HELP_STRINGS,
-                                     parse_mode=ParseMode.MARKDOWN,
-                                     reply_markup=InlineKeyboardMarkup(
-                                         paginate_modules(next_page + 1, HELPABLE, "help")))
+            query.message.reply_text(
+                HELP_STRINGS,
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup(
+                    paginate_modules(next_page + 1, HELPABLE, "help")
+                ),
+            )
 
         elif back_match:
-            query.message.reply_text(text=HELP_STRINGS,
-                                     parse_mode=ParseMode.MARKDOWN,
-                                     reply_markup=InlineKeyboardMarkup(paginate_modules(0, HELPABLE, "help")))
+            query.message.reply_text(
+                text=HELP_STRINGS,
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup(
+                    paginate_modules(0, HELPABLE, "help")
+                ),
+            )
 
         # ensure no spinny white circle
         bot.answer_callback_query(query.id)
@@ -314,17 +352,40 @@ def get_help(bot: Bot, update: Update):
     # ONLY send help in PM
     if chat.type != chat.PRIVATE:
 
-        update.effective_message.reply_text("Contact me in PM to get the list of possible commands.",
-                                            reply_markup=InlineKeyboardMarkup(
-                                                [[InlineKeyboardButton(text="⚜️Help",url="t.me/{}?start=help".format(bot.username))],  
-                                                [InlineKeyboardButton(text="🛡Contact Creator",url="https://t.me/Amani_m_h_d")]]))
+        update.effective_message.reply_text(
+            "Contact me in PM to get the list of possible commands.",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="⚜️Help", url="t.me/{}?start=help".format(bot.username)
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="🛡Contact Creator", url="https://t.me/Amani_m_h_d"
+                        )
+                    ],
+                ]
+            ),
+        )
         return
 
     elif len(args) >= 2 and any(args[1].lower() == x for x in HELPABLE):
         module = args[1].lower()
-        text = "Here is the available help for the *{}* module:\n".format(HELPABLE[module].__mod_name__) \
-               + HELPABLE[module].__help__
-        send_help(chat.id, text, InlineKeyboardMarkup([[InlineKeyboardButton(text="🚶‍♂️Back🚶‍♂️", callback_data="help_back")]]))
+        text = (
+            "Here is the available help for the *{}* module:\n".format(
+                HELPABLE[module].__mod_name__
+            )
+            + HELPABLE[module].__help__
+        )
+        send_help(
+            chat.id,
+            text,
+            InlineKeyboardMarkup(
+                [[InlineKeyboardButton(text="🚶‍♂️Back🚶‍♂️", callback_data="help_back")]]
+            ),
+        )
 
     else:
         send_help(chat.id, HELP_STRINGS)
@@ -334,29 +395,41 @@ def send_settings(chat_id, user_id, user=False):
     if user:
         if USER_SETTINGS:
             settings = "\n\n".join(
-                "*{}*:\n{}".format(mod.__mod_name__, mod.__user_settings__(user_id)) for mod in USER_SETTINGS.values())
-            dispatcher.bot.send_message(user_id, "These are your current settings:" + "\n\n" + settings,
-                                        parse_mode=ParseMode.MARKDOWN)
+                "*{}*:\n{}".format(mod.__mod_name__, mod.__user_settings__(user_id))
+                for mod in USER_SETTINGS.values()
+            )
+            dispatcher.bot.send_message(
+                user_id,
+                "These are your current settings:" + "\n\n" + settings,
+                parse_mode=ParseMode.MARKDOWN,
+            )
 
         else:
-            dispatcher.bot.send_message(user_id, "Seems like there aren't any user specific settings available :'(",
-                                        parse_mode=ParseMode.MARKDOWN)
+            dispatcher.bot.send_message(
+                user_id,
+                "Seems like there aren't any user specific settings available :'(",
+                parse_mode=ParseMode.MARKDOWN,
+            )
 
     else:
         if CHAT_SETTINGS:
             chat_name = dispatcher.bot.getChat(chat_id).title
-            dispatcher.bot.send_message(user_id,
-                                        text="Which module would you like to check {}'s settings for?".format(
-                                            chat_name),
-                                        reply_markup=InlineKeyboardMarkup(
-                                            paginate_modules(0, CHAT_SETTINGS, "stngs", chat=chat_id)))
+            dispatcher.bot.send_message(
+                user_id,
+                text="Which module would you like to check {}'s settings for?".format(
+                    chat_name
+                ),
+                reply_markup=InlineKeyboardMarkup(
+                    paginate_modules(0, CHAT_SETTINGS, "stngs", chat=chat_id)
+                ),
+            )
         else:
-            dispatcher.bot.send_message(user_id, "Seems like there aren't any chat settings available :'(\nSend this "
-                                                 "in a group chat you're admin in to find its current settings!",
-                                        parse_mode=ParseMode.MARKDOWN)
-
-
-    
+            dispatcher.bot.send_message(
+                user_id,
+                "Seems like there aren't any chat settings available :'(\nSend this "
+                "in a group chat you're admin in to find its current settings!",
+                parse_mode=ParseMode.MARKDOWN,
+            )
 
 
 @run_async
@@ -372,44 +445,63 @@ def settings_button(bot: Bot, update: Update):
             chat_id = mod_match.group(1)
             module = mod_match.group(2)
             chat = bot.get_chat(chat_id)
-            text = "*{}* has the following settings for the *{}* module:\n\n".format(escape_markdown(chat.title),
-                                                                                     CHAT_SETTINGS[
-                                                                                         module].__mod_name__) + \
-                   CHAT_SETTINGS[module].__chat_settings__(chat_id, user.id)
-            query.message.reply_text(text=text,
-                                     parse_mode=ParseMode.MARKDOWN,
-                                     reply_markup=InlineKeyboardMarkup(
-                                         [[InlineKeyboardButton(text="🏃🏻‍♂️Back🏃🏻‍♂️",
-                                                                callback_data="stngs_back({})".format(chat_id))]]))
+            text = "*{}* has the following settings for the *{}* module:\n\n".format(
+                escape_markdown(chat.title), CHAT_SETTINGS[module].__mod_name__
+            ) + CHAT_SETTINGS[module].__chat_settings__(chat_id, user.id)
+            query.message.reply_text(
+                text=text,
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup(
+                    [
+                        [
+                            InlineKeyboardButton(
+                                text="🏃🏻‍♂️Back🏃🏻‍♂️",
+                                callback_data="stngs_back({})".format(chat_id),
+                            )
+                        ]
+                    ]
+                ),
+            )
 
         elif prev_match:
             chat_id = prev_match.group(1)
             curr_page = int(prev_match.group(2))
             chat = bot.get_chat(chat_id)
-            query.message.reply_text("Hi there! There are quite a few settings for {} - go ahead and pick what "
-                                     "you're interested in.".format(chat.title),
-                                     reply_markup=InlineKeyboardMarkup(
-                                         paginate_modules(curr_page - 1, CHAT_SETTINGS, "stngs",
-                                                          chat=chat_id)))
+            query.message.reply_text(
+                "Hi there! There are quite a few settings for {} - go ahead and pick what "
+                "you're interested in.".format(chat.title),
+                reply_markup=InlineKeyboardMarkup(
+                    paginate_modules(
+                        curr_page - 1, CHAT_SETTINGS, "stngs", chat=chat_id
+                    )
+                ),
+            )
 
         elif next_match:
             chat_id = next_match.group(1)
             next_page = int(next_match.group(2))
             chat = bot.get_chat(chat_id)
-            query.message.reply_text("Hi there! There are quite a few settings for {} - go ahead and pick what "
-                                     "you're interested in.".format(chat.title),
-                                     reply_markup=InlineKeyboardMarkup(
-                                         paginate_modules(next_page + 1, CHAT_SETTINGS, "stngs",
-                                                          chat=chat_id)))
+            query.message.reply_text(
+                "Hi there! There are quite a few settings for {} - go ahead and pick what "
+                "you're interested in.".format(chat.title),
+                reply_markup=InlineKeyboardMarkup(
+                    paginate_modules(
+                        next_page + 1, CHAT_SETTINGS, "stngs", chat=chat_id
+                    )
+                ),
+            )
 
         elif back_match:
             chat_id = back_match.group(1)
             chat = bot.get_chat(chat_id)
-            query.message.reply_text(text="Hi there! There are quite a few settings for {} - go ahead and pick what "
-                                          "you're interested in.".format(escape_markdown(chat.title)),
-                                     parse_mode=ParseMode.MARKDOWN,
-                                     reply_markup=InlineKeyboardMarkup(paginate_modules(0, CHAT_SETTINGS, "stngs",
-                                                                                        chat=chat_id)))
+            query.message.reply_text(
+                text="Hi there! There are quite a few settings for {} - go ahead and pick what "
+                "you're interested in.".format(escape_markdown(chat.title)),
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup(
+                    paginate_modules(0, CHAT_SETTINGS, "stngs", chat=chat_id)
+                ),
+            )
 
         # ensure no spinny white circle
         bot.answer_callback_query(query.id)
@@ -430,24 +522,32 @@ def get_settings(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     msg = update.effective_message  # type: Optional[Message]
-    args = msg.text.split(None, 1)
+    msg.text.split(None, 1)
 
     # ONLY send settings in PM
     if chat.type != chat.PRIVATE:
         if is_user_admin(chat, user.id):
             text = "Click here to get this chat's settings, as well as yours."
-            msg.reply_text(text,
-                           reply_markup=InlineKeyboardMarkup(
-                               [[InlineKeyboardButton(text="⚙️Settings⚙️",
-                                                      url="t.me/{}?start=stngs_{}".format(
-                                                          bot.username, chat.id))]]))
+            msg.reply_text(
+                text,
+                reply_markup=InlineKeyboardMarkup(
+                    [
+                        [
+                            InlineKeyboardButton(
+                                text="⚙️Settings⚙️",
+                                url="t.me/{}?start=stngs_{}".format(
+                                    bot.username, chat.id
+                                ),
+                            )
+                        ]
+                    ]
+                ),
+            )
         else:
             text = "Click here to check your settings."
 
     else:
         send_settings(chat.id, user.id, True)
-
-
 
 
 def migrate_chats(bot: Bot, update: Update):
@@ -475,100 +575,134 @@ def source(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
 
     if chat.type == "private":
-        update.effective_message.reply_text(SOURCE_STRING, parse_mode=ParseMode.MARKDOWN)
+        update.effective_message.reply_text(
+            SOURCE_STRING, parse_mode=ParseMode.MARKDOWN
+        )
 
     else:
         try:
             bot.send_message(user.id, SOURCE_STRING, parse_mode=ParseMode.MARKDOWN)
 
-            update.effective_message.reply_text("You'll find in PM more info about my sourcecode.")
+            update.effective_message.reply_text(
+                "You'll find in PM more info about my sourcecode."
+            )
         except Unauthorized:
-            update.effective_message.reply_text("Contact me in PM first to get source information.")
+            update.effective_message.reply_text(
+                "Contact me in PM first to get source information."
+            )
+
 
 @run_async
 def imdb_searchdata(bot: Bot, update: Update):
     query_raw = update.callback_query
-    query = query_raw.data.split('$')
+    query = query_raw.data.split("$")
     print(query)
     if query[1] != query_raw.from_user.username:
         return
-    title = ''
-    rating = ''
-    date = ''
-    synopsis = ''
-    url_sel = 'https://www.imdb.com/title/%s/' % (query[0])
+    title = ""
+    rating = ""
+    date = ""
+    synopsis = ""
+    url_sel = "https://www.imdb.com/title/%s/" % (query[0])
     text_sel = requests.get(url_sel).text
-    selector_global = Selector(text = text_sel)
-    title = selector_global.xpath('//div[@class="title_wrapper"]/h1/text()').get().strip()
-    try:
-        rating = selector_global.xpath('//div[@class="ratingValue"]/strong/span/text()').get().strip()
-    except:
-        rating = '-'
-    try:
-        date = '(' + selector_global.xpath('//div[@class="title_wrapper"]/h1/span/a/text()').getall()[-1].strip() + ')'
-    except:
-        date = selector_global.xpath('//div[@class="subtext"]/a/text()').getall()[-1].strip()
-    try:
-        synopsis_list = selector_global.xpath('//div[@class="summary_text"]/text()').getall()
-        synopsis = re.sub(' +',' ', re.sub(r'\([^)]*\)', '', ''.join(sentence.strip() for sentence in synopsis_list)))
-    except:
-        synopsis = '_No synopsis available._'
-    movie_data = '*%s*, _%s_\n★ *%s*\n\n%s' % (title, date, rating, synopsis)
-    query_raw.edit_message_text(
-        movie_data, 
-        parse_mode=ParseMode.MARKDOWN
+    selector_global = Selector(text=text_sel)
+    title = (
+        selector_global.xpath('//div[@class="title_wrapper"]/h1/text()').get().strip()
     )
+    try:
+        rating = (
+            selector_global.xpath('//div[@class="ratingValue"]/strong/span/text()')
+            .get()
+            .strip()
+        )
+    except:
+        rating = "-"
+    try:
+        date = (
+            "("
+            + selector_global.xpath('//div[@class="title_wrapper"]/h1/span/a/text()')
+            .getall()[-1]
+            .strip()
+            + ")"
+        )
+    except:
+        date = (
+            selector_global.xpath('//div[@class="subtext"]/a/text()')
+            .getall()[-1]
+            .strip()
+        )
+    try:
+        synopsis_list = selector_global.xpath(
+            '//div[@class="summary_text"]/text()'
+        ).getall()
+        synopsis = re.sub(
+            " +",
+            " ",
+            re.sub(
+                r"\([^)]*\)",
+                "",
+                "".join(sentence.strip() for sentence in synopsis_list),
+            ),
+        )
+    except:
+        synopsis = "_No synopsis available._"
+    movie_data = "*%s*, _%s_\n★ *%s*\n\n%s" % (title, date, rating, synopsis)
+    query_raw.edit_message_text(movie_data, parse_mode=ParseMode.MARKDOWN)
+
 
 @run_async
 def imdb(bot: Bot, update: Update, args):
     message = update.effective_message
-    query = ''.join([arg + '_' for arg in args]).lower()
+    query = "".join([arg + "_" for arg in args]).lower()
     if not query:
-        bot.send_message(
-            message.chat.id,
-            'You need to specify a movie/show name!'
-        )
+        bot.send_message(message.chat.id, "You need to specify a movie/show name!")
         return
-    url_suggs = 'https://v2.sg.media-imdb.com/suggests/%s/%s.json' % (query[0], query)
+    url_suggs = "https://v2.sg.media-imdb.com/suggests/%s/%s.json" % (query[0], query)
     json_url = urlopen(url_suggs)
-    suggs_raw = ''
+    suggs_raw = ""
     for line in json_url:
         suggs_raw = line
     skip_chars = 6 + len(query)
     suggs_dict = json.loads(suggs_raw[skip_chars:][:-1])
     if suggs_dict:
-        button_list = [[
+        button_list = [
+            [
                 InlineKeyboardButton(
-                    text = str(sugg['l'] + ' (' + str(sugg['y']) + ')'), 
-                    callback_data = str(sugg['id']) + '$' + str(message.from_user.username)
-                )] for sugg in suggs_dict['d'] if 'y' in sugg
+                    text=str(sugg["l"] + " (" + str(sugg["y"]) + ")"),
+                    callback_data=str(sugg["id"])
+                    + "$"
+                    + str(message.from_user.username),
+                )
+            ]
+            for sugg in suggs_dict["d"]
+            if "y" in sugg
         ]
         reply_markup = InlineKeyboardMarkup(button_list)
-        bot.send_message(
-            message.chat.id,
-            'Which one? ',
-            reply_markup = reply_markup
-        )
+        bot.send_message(message.chat.id, "Which one? ", reply_markup=reply_markup)
     else:
-        pass             
-            
-            
+        pass
+
+
 # Avoid memory dead
 def memory_limit(percentage: float):
     if platform.system() != "Linux":
-        print('Only works on linux!')
+        print("Only works on linux!")
         return
     soft, hard = resource.getrlimit(resource.RLIMIT_AS)
-    resource.setrlimit(resource.RLIMIT_AS, (int(get_memory() * 1024 * percentage), hard))
+    resource.setrlimit(
+        resource.RLIMIT_AS, (int(get_memory() * 1024 * percentage), hard)
+    )
+
 
 def get_memory():
-    with open('/proc/meminfo', 'r') as mem:
+    with open("/proc/meminfo", "r") as mem:
         free_memory = 0
         for i in mem:
             sline = i.split()
-            if str(sline[0]) in ('MemFree:', 'Buffers:', 'Cached:'):
+            if str(sline[0]) in ("MemFree:", "Buffers:", "Cached:"):
                 free_memory += int(sline[1])
     return free_memory
+
 
 def memory(percentage=0.5):
     def decorator(function):
@@ -577,37 +711,40 @@ def memory(percentage=0.5):
             try:
                 function(*args, **kwargs)
             except MemoryError:
-                mem = get_memory() / 1024 /1024
-                print('Remain: %.2f GB' % mem)
-                sys.stderr.write('\n\nERROR: Memory Exception\n')
+                mem = get_memory() / 1024 / 1024
+                print("Remain: %.2f GB" % mem)
+                sys.stderr.write("\n\nERROR: Memory Exception\n")
                 sys.exit(1)
+
         return wrapper
+
     return decorator
 
 
 @memory(percentage=0.8)
 def main():
-    test_handler = CommandHandler("test", test)
+    CommandHandler("test", test)
     start_handler = CommandHandler("start", start, pass_args=True)
-    
-    IMDB_HANDLER = CommandHandler('imdb', imdb, pass_args=True)
+
+    IMDB_HANDLER = CommandHandler("imdb", imdb, pass_args=True)
     IMDB_SEARCHDATAHANDLER = CallbackQueryHandler(imdb_searchdata)
-   
+
     start_callback_handler = CallbackQueryHandler(send_start, pattern=r"bot_start")
     dispatcher.add_handler(start_callback_handler)
-
 
     help_handler = CommandHandler("help", get_help)
     help_callback_handler = CallbackQueryHandler(help_button, pattern=r"help_")
 
     settings_handler = CommandHandler("settings", get_settings)
     settings_callback_handler = CallbackQueryHandler(settings_button, pattern=r"stngs_")
-   
+
     source_handler = CommandHandler("source", source)
-    
+
     migrate_handler = MessageHandler(Filters.status_update.migrate, migrate_chats)
 
-    M_CONNECT_BTN_HANDLER = CallbackQueryHandler(m_connect_button, pattern=r"main_connect")
+    M_CONNECT_BTN_HANDLER = CallbackQueryHandler(
+        m_connect_button, pattern=r"main_connect"
+    )
 
     # dispatcher.add_handler(test_handler)
     dispatcher.add_handler(start_handler)
@@ -620,19 +757,15 @@ def main():
     dispatcher.add_handler(M_CONNECT_BTN_HANDLER)
     dispatcher.add_handler(IMDB_HANDLER)
     dispatcher.add_handler(IMDB_SEARCHDATAHANDLER)
-    
 
     # dispatcher.add_error_handler(error_callback)
 
     if WEBHOOK:
         LOGGER.info("Using webhooks.")
-        updater.start_webhook(listen="127.0.0.1",
-                              port=PORT,
-                              url_path=TOKEN)
+        updater.start_webhook(listen="127.0.0.1", port=PORT, url_path=TOKEN)
 
         if CERT_PATH:
-            updater.bot.set_webhook(url=URL + TOKEN,
-                                    certificate=open(CERT_PATH, 'rb'))
+            updater.bot.set_webhook(url=URL + TOKEN, certificate=open(CERT_PATH, "rb"))
         else:
             updater.bot.set_webhook(url=URL + TOKEN)
 
@@ -642,7 +775,7 @@ def main():
 
     updater.idle()
 
-    
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     LOGGER.info("Successfully loaded modules: " + str(ALL_MODULES))
     main()
