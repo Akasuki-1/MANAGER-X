@@ -72,6 +72,12 @@ def paginate_modules(page_n: int, module_dict: Dict, prefix, chat=None) -> List:
         pairs.append((modules[-1],))
     elif calc == 2:
         pairs.append((modules[-1],))
+    round_num = len(modules) / 3
+    calc = len(modules) - round(round_num)
+    if calc == 1:
+        pairs.append((modules[-1],))
+    elif calc == 2:
+        pairs.append((modules[-1],))
 
     else:
         pairs += [[EqInlineKeyboardButton("Back to Info", callback_data="aboutmanu_")]]
