@@ -1,5 +1,5 @@
 
-![ Repo size](https://img.shields.io/github/repo-size/Unknown-01-hacker/X-daisy)
+![ Repo size](https://img.shields.io/github/repo-size/akasuki-1/manager-x)
 
 **Click below to deploy**
 
