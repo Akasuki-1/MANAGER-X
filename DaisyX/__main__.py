@@ -35,7 +35,6 @@ from telegram.ext.dispatcher import DispatcherHandlerStop, run_async
 from telegram.utils.helpers import escape_markdown
 
 from DaisyX import (
-    RULEZZ,
     ALLOW_EXCL,
     BL_CHATS,
     CERT_PATH,
@@ -63,8 +62,6 @@ from DaisyX.modules.helper_funcs.chat_status import is_user_admin
 from DaisyX.modules.helper_funcs.misc import paginate_modules
 from DaisyX.modules.helper_funcs.readable_time import get_readable_time
 
-
-
 PM_START_TEXT = """
 Hello there, I'm a big fan of Kiccha Sudeep [,](https://telegra.ph/file/4f2039d807a346f6baf69.jpg) so my name is *kicchafan*.
 
@@ -75,20 +72,19 @@ buttons = [
     [
         InlineKeyboardButton(text="Help ❔", callback_data="help_back"),
     ],
-  
-    [   
-        InlineKeyboardButton(text="Add Me", url="http://t.me/Kiccha_fanbot?startgroup=true"),
+    [
+        InlineKeyboardButton(
+            text="Add Me", url="http://t.me/Kiccha_fanbot?startgroup=true"
+        ),
     ],
     [
-        InlineKeyboardButton(text="↓Join our group & channel↓", callback_data="mareek_"),
+        InlineKeyboardButton(
+            text="↓Join our group & channel↓", callback_data="mareek_"
+        ),
     ],
     [
-                        InlineKeyboardButton(
-                            text="Group", url="t.me/kannada_cinema_group"
-                        ),
-                        InlineKeyboardButton(
-                            text="Channel", url="t.me/kannada_all_movis"
-                        ),
+        InlineKeyboardButton(text="Group", url="t.me/kannada_cinema_group"),
+        InlineKeyboardButton(text="Channel", url="t.me/kannada_all_movis"),
     ],
 ]
 
@@ -230,9 +226,7 @@ def start(update: Update, context: CallbackContext):
             )
     else:
         update.effective_message.reply_text(
-            "Heya :) PM me if u have any questions on how to use me!".format(
-                uptime
-            ),
+            "Heya :) PM me if u have any questions on how to use me!".format(uptime),
             parse_mode=ParseMode.HTML,
         )
 
@@ -362,6 +356,7 @@ def help_button(update, context):
             query.message.edit_text(excp.message)
             LOGGER.exception("Exception in help buttons. %s", str(query.data))
 
+
 @run_async
 def mareek_about_callback(update, context):
     query = update.callback_query
@@ -372,20 +367,16 @@ def mareek_about_callback(update, context):
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
-                 [
+                    [
                         InlineKeyboardButton(
                             text="Group", url="t.me/kannada_cinema_group"
                         ),
                         InlineKeyboardButton(
                             text="Channel", url="t.me/kannada_all_movis"
                         ),
-                 ],
-                 [
-                    InlineKeyboardButton(text="LBU kiccha", callback_data="kichawe_")
-                 ],
-                 [
-                    InlineKeyboardButton(text="Go Back", callback_data="mareek_back")
-                 ]
+                    ],
+                    [InlineKeyboardButton(text="LBU kiccha", callback_data="kichawe_")],
+                    [InlineKeyboardButton(text="Go Back", callback_data="mareek_back")],
                 ]
             ),
         )
@@ -407,17 +398,19 @@ def kichawe_about_callback(update, context):
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
-                 [
+                    [
                         InlineKeyboardButton(
                             text="Group", url="t.me/kannada_cinema_group"
                         ),
                         InlineKeyboardButton(
                             text="Channel", url="t.me/kannada_all_movis"
                         ),
-                 ],
-                 [
-                    InlineKeyboardButton(text="Go Back", callback_data="kichawe_back")
-                 ]
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="Go Back", callback_data="kichawe_back"
+                        )
+                    ],
                 ]
             ),
         )
@@ -604,7 +597,7 @@ def get_help(update, context):
                     [
                         InlineKeyboardButton(
                             text="Kannada Moviez",
-                            url="https://t.me/kannada_cinema_group"
+                            url="https://t.me/kannada_cinema_group",
                         )
                     ],
                 ]
@@ -872,7 +865,7 @@ def main():
         try:
             dispatcher.bot.sendMessage(f"@{SUPPORT_CHAT}", "I am now online!"),
             dispatcher.bot.sendMessage(f"@Musicbotplugins_bot", "I am now online!")
-        
+
         except Unauthorized:
             LOGGER.warning(
                 "Bot isnt able to send message to support_chat, go and check!"
@@ -888,11 +881,14 @@ def main():
 
     settings_handler = CommandHandler("settings", get_settings)
     settings_callback_handler = CallbackQueryHandler(settings_button, pattern=r"stngs_")
-    
-    mareek_callback_handler = CallbackQueryHandler(mareek_about_callback, pattern=r"mareek_")
 
-    kichawe_callback_handler = CallbackQueryHandler(kichawe_about_callback, pattern=r"kichawe_")
+    mareek_callback_handler = CallbackQueryHandler(
+        mareek_about_callback, pattern=r"mareek_"
+    )
 
+    kichawe_callback_handler = CallbackQueryHandler(
+        kichawe_about_callback, pattern=r"kichawe_"
+    )
 
     about_callback_handler = CallbackQueryHandler(
         DaisyX_about_callback, pattern=r"aboutmanu_"
