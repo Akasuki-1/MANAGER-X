@@ -52,6 +52,8 @@ from DaisyX import (
     pbot,
     telethn,
     updater,
+    CHANNEL_NAME,
+    GROUP_NAME,
 )
 
 # needed to dynamically load modules
@@ -61,6 +63,9 @@ from DaisyX.modules.helper_funcs.alternate import typing_action
 from DaisyX.modules.helper_funcs.chat_status import is_user_admin
 from DaisyX.modules.helper_funcs.misc import paginate_modules
 from DaisyX.modules.helper_funcs.readable_time import get_readable_time
+
+GROUP_NAME = GRPN
+CHANNEL_NAME = CHLN
 
 PM_START_TEXT = """
 Hello there, I'm a big fan of Kiccha Sudeep [,](https://telegra.ph/file/4f2039d807a346f6baf69.jpg) so my name is *kicchafan*.
@@ -83,8 +88,8 @@ buttons = [
         ),
     ],
     [
-        InlineKeyboardButton(text="Group", url="t.me/kannada_cinema_group"),
-        InlineKeyboardButton(text="Channel", url="t.me/kannada_all_movis"),
+        InlineKeyboardButton(text="Group", url="t.me/{GRPN}"),
+        InlineKeyboardButton(text="Channel", url="t.me/{CHLN}"),
     ],
 ]
 
