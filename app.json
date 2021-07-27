@@ -69,6 +69,16 @@
          "description": "A channel where bot will print who added it to what group, useful during debugging or spam handling.",
          "required": true,
          "value": "-1001378266627"
+      },
+      "CHANNEL_NAME": {
+         "description": "Your telegram channel username.",
+         "required": true,
+         "value": ""
+      },
+      "GROUP_NAME": {
+         "description": "Your telegram group username.",
+         "required": true,
+         "value": ""
       },      
       "CASH_API_KEY": {
          "description": "Required for currency converter. Get yours from https://www.alphavantage.co/support/#api-key",
