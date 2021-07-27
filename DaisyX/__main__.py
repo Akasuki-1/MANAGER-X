@@ -88,7 +88,7 @@ buttons = [
         ),
     ],
     [
-        InlineKeyboardButton(text="Group", url="t.me/{GRPN}"),
+        InlineKeyboardButton(text="Group", url="t.me/{GROUP_NAME}"),
         InlineKeyboardButton(text="Channel", url="t.me/{CHLN}"),
     ],
 ]
